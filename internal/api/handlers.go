@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"bx.share/config"
-	"bx.share/internal/crypto"
-	"bx.share/internal/models"
-	"bx.share/internal/store"
-	"bx.share/web"
+	"secure.share/config"
+	"secure.share/internal/crypto"
+	"secure.share/internal/models"
+	"secure.share/internal/store"
+	"secure.share/web"
 
 	"github.com/go-chi/chi/v5"
 )

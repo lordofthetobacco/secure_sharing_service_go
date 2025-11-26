@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"bx.share/internal/models"
+	"secure.share/internal/models"
 )
 
 // Compile-time interface check

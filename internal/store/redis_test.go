@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"bx.share/internal/models"
 	"github.com/redis/go-redis/v9"
+	"secure.share/internal/models"
 )
 
 func TestRedisStore(t *testing.T) {

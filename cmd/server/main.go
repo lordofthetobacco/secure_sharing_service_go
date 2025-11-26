@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"bx.share/config"
-	"bx.share/internal/api"
-	"bx.share/internal/store"
+	"secure.share/config"
+	"secure.share/internal/api"
+	"secure.share/internal/store"
 
 	"github.com/redis/go-redis/v9"
 )

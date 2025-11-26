@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"bx.share/internal/models"
+	"secure.share/internal/models"
 )
 
 var (

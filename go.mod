@@ -1,4 +1,4 @@
-module bx.share
+module secure.share
 
 go 1.25.4
 

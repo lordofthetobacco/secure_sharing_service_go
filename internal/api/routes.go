@@ -3,8 +3,8 @@ package api
 import (
 	"time"
 
-	"bx.share/config"
-	"bx.share/internal/store"
+	"secure.share/config"
+	"secure.share/internal/store"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

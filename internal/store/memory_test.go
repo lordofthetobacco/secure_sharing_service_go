@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"bx.share/internal/models"
+	"secure.share/internal/models"
 )
 
 func TestMemoryStore(t *testing.T) {
