@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Share</title>
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --surface: #e0e0e0;
+            --border: #334155;
+            --text: #000000;
+            --text-muted: #666666;
+            --primary: #efbf04;
+            --primary-hover: #efc004cc;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        textarea,
+        select,
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus,
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.success {
+            border: 1px solid var(--success);
+        }
+
+        .result.error {
+            border: 1px solid var(--error);
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-url {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.875rem;
+            padding: 0.75rem;
+            background: var(--surface);
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .copy-btn {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+        }
+
+        .error-msg {
+            color: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Secret Share</h1>
+        <p class="subtitle">Share passwords and secrets securely</p>
+
+        <div class="card">
+            <form id="secretForm">
+                <div class="form-group">
+                    <label for="content">Secret Content</label>
+                    <textarea 
+                        id="content" 
+                        name="content" 
+                        placeholder="Enter your secret..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="maxViews">Max Views</label>
+                        <select id="maxViews" name="max_views">
+                            <option value="1">1 view</option>
+                            <option value="2">2 views</option>
+                            <option value="3" selected>3 views</option>
+                            <option value="5">5 views</option>
+                            <option value="10">10 views</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ttl">Expires In</label>
+                        <select id="ttl" name="ttl_minutes">
+                            <option value="5">5 minutes</option>
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="360">6 hours</option>
+                            <option value="1440">24 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn">Create Secret Link</button>
+            </form>
+
+            <div id="result" class="result">
+                <div class="result-label">Share this link:</div>
+                <div id="resultUrl" class="result-url"></div>
+                <div id="resultMeta" class="result-meta"></div>
+                <button type="button" class="copy-btn" onclick="copyUrl()">
+                    📋 Copy to Clipboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('secretForm');
+        const result = document.getElementById('result');
+        const resultUrl = document.getElementById('resultUrl');
+        const resultMeta = document.getElementById('resultMeta');
+        const submitBtn = document.getElementById('submitBtn');
+
+        let generatedUrl = '';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+            result.classList.remove('show', 'success', 'error');
+
+            const payload = {
+                content: document.getElementById('content').value,
+                max_views: parseInt(document.getElementById('maxViews').value),
+                ttl_minutes: parseInt(document.getElementById('ttl').value)
+            };
+
+            try {
+                const response = await fetch('/api/secrets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create secret');
+                }
+
+                generatedUrl = data.url;
+                resultUrl.textContent = data.url;
+
+                const expiresAt = new Date(data.expires_at);
+                resultMeta.textContent = `Expires: ${expiresAt.toLocaleString()} • Max views: ${data.max_views}`;
+
+                result.classList.add('show', 'success');
+                form.reset();
+
+            } catch (err) {
+                resultUrl.innerHTML = `<span class="error-msg">${err.message}</span>`;
+                resultMeta.textContent = '';
+                result.classList.add('show', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Secret Link';
+            }
+        });
+
+        async function copyUrl() {
+            if (!generatedUrl) return;
+
+            try {
+                await navigator.clipboard.writeText(generatedUrl);
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy to Clipboard', 2000);
+            } catch (err) {
+                alert('Failed to copy. Please select and copy manually.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reveal Secret</title>
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --surface: #e0e0e0;
+            --border: #334155;
+            --text: #000000;
+            --text-muted: #666666;
+            --primary: #efbf04;
+            --primary-hover: #efc004cc;
+            --warning: #ff9900;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+
+        .state {
+            display: none;
+        }
+
+        .state.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .confirm-box {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .confirm-box p {
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .secret-box {
+            background: var(--bg);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .secret-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .secret-content {
+            font-family: monospace;
+            font-size: 1rem;
+            word-break: break-all;
+            white-space: pre-wrap;
+            user-select: all;
+        }
+
+        .views-remaining {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .error-box {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            color: var(--error);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-message {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            margin-top: 0.75rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .copy-btn {
+            margin-top: 1rem;
+        }
+
+        /* Debug panel */
+        .debug-panel {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #000;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .debug-panel .log {
+            margin-bottom: 0.25rem;
+            color: #22c55e;
+        }
+
+        .debug-panel .error {
+            color: #ef4444;
+        }
+
+        .debug-panel .warn {
+            color: #f59e0b;
+        }
+
+        .debug-panel .info {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Secret Share</h1>
+        <p class="subtitle">Secure secret reveal</p>
+
+        <div class="card">
+            <!-- Loading State -->
+            <div id="loadingState" class="state active">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Checking secret status...</p>
+                </div>
+            </div>
+
+            <!-- Confirm State -->
+            <div id="confirmState" class="state">
+                <div class="confirm-box">
+                    <div class="warning">
+                        ⚠️ This secret can only be viewed a limited number of times.
+                        Once revealed, this view will be counted.
+                    </div>
+                    <p id="statusInfo"></p>
+                    <button onclick="revealSecret()">Reveal Secret</button>
+                    <button class="btn-secondary" onclick="goHome()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Secret State -->
+            <div id="secretState" class="state">
+                <div class="secret-box">
+                    <div class="secret-label">Your secret:</div>
+                    <div id="secretContent" class="secret-content"></div>
+                </div>
+                <div id="viewsRemaining" class="views-remaining"></div>
+                <button class="copy-btn" onclick="copySecret()">📋 Copy Secret</button>
+                <button class="btn-secondary" onclick="goHome()">Create New Secret</button>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="state">
+                <div class="error-box">
+                    <div class="error-icon">❌</div>
+                    <h2 class="error-title">Unable to Reveal</h2>
+                    <p id="errorMessage" class="error-message"></p>
+                    <button onclick="goHome()">Create New Secret</button>
+                </div>
+            </div>
+
+            <!-- Debug Panel -->
+            <div id="debugPanel" class="debug-panel"></div>
+        </div>
+    </div>
+
+    <script>
+        // Debug logger
+        const debugPanel = document.getElementById('debugPanel');
+        
+        function debugLog(message, type = 'log') {
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${time}] ${message}`;
+            debugPanel.appendChild(line);
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        // State management
+        const states = {
+            loading: document.getElementById('loadingState'),
+            confirm: document.getElementById('confirmState'),
+            secret: document.getElementById('secretState'),
+            error: document.getElementById('errorState')
+        };
+
+        let secretContent = '';
+        let passphrase = '';
+        let secretId = '';
+
+        function showState(state) {
+            debugLog(`Switching to state: ${state}`, 'info');
+            Object.values(states).forEach(s => s.classList.remove('active'));
+            states[state].classList.add('active');
+        }
+
+        function showError(message) {
+            debugLog(`Error: ${message}`, 'error');
+            document.getElementById('errorMessage').textContent = message;
+            showState('error');
+        }
+
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        async function copySecret() {
+            if (!secretContent) return;
+
+            try {
+                await navigator.clipboard.writeText(secretContent);
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy Secret', 2000);
+            } catch (err) {
+                alert('Failed to copy. Please select and copy manually.');
+            }
+        }
+
+        async function checkStatus() {
+            debugLog('=== checkStatus() started ===', 'info');
+
+            // Parse URL
+            const fullUrl = window.location.href;
+            const path = window.location.pathname;
+            const hash = window.location.hash;
+
+            debugLog(`Full URL: ${fullUrl}`);
+            debugLog(`Path: ${path}`);
+            debugLog(`Hash: ${hash ? hash.substring(0, 10) + '...' : '(empty)'}`);
+
+            // Extract secret ID from path
+            const match = path.match(/\/s\/([^/]+)/);
+            debugLog(`Regex match: ${JSON.stringify(match)}`);
+
+            if (!match) {
+                showError('Invalid secret URL - could not extract ID from path');
+                return;
+            }
+
+            secretId = match[1];
+            passphrase = hash.slice(1); // Remove #
+
+            debugLog(`Secret ID: ${secretId}`);
+            debugLog(`Passphrase: ${passphrase ? `present (${passphrase.length} chars)` : 'MISSING'}`);
+
+            if (!passphrase) {
+                showError('Missing decryption key in URL (no # fragment)');
+                return;
+            }
+
+            // Build API URL
+            const apiUrl = `/api/secrets/${secretId}/status`;
+            debugLog(`Fetching: ${apiUrl}`, 'info');
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(apiUrl);
+                const elapsed = Date.now() - startTime;
+
+                debugLog(`Response status: ${response.status} (${elapsed}ms)`);
+                debugLog(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
+
+                const responseText = await response.text();
+                debugLog(`Response body: ${responseText}`);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    debugLog(`Parsed JSON: ${JSON.stringify(data)}`);
+                } catch (parseErr) {
+                    debugLog(`Failed to parse JSON: ${parseErr.message}`, 'error');
+                    showError('Invalid response from server');
+                    return;
+                }
+
+                if (!data.exists) {
+                    debugLog('Secret does not exist', 'warn');
+                    if (data.expired) {
+                        showError('This secret has expired');
+                    } else {
+                        showError('This secret does not exist or has been deleted');
+                    }
+                    return;
+                }
+
+                debugLog('Secret exists, showing confirmation', 'info');
+                const statusInfo = document.getElementById('statusInfo');
+                const expiresAt = new Date(data.expires_at);
+                statusInfo.textContent = `Views remaining: ${data.views_remaining} • Expires: ${expiresAt.toLocaleString()}`;
+
+                showState('confirm');
+
+            } catch (err) {
+                debugLog(`Fetch error: ${err.name}: ${err.message}`, 'error');
+                debugLog(`Error stack: ${err.stack}`, 'error');
+                
+                if (err.name === 'TypeError' && err.message.includes('fetch')) {
+                    showError('Network error - cannot reach server. Check if server is running.');
+                } else {
+                    showError(`Failed to check secret status: ${err.message}`);
+                }
+            }
+        }
+
+        async function revealSecret() {
+            debugLog('=== revealSecret() started ===', 'info');
+            showState('loading');
+
+            const apiUrl = `/api/secrets/${secretId}?passphrase=${encodeURIComponent(passphrase)}`;
+            debugLog(`Fetching: ${apiUrl.replace(passphrase, '***')}`);
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(apiUrl);
+                const elapsed = Date.now() - startTime;
+
+                debugLog(`Response status: ${response.status} (${elapsed}ms)`);
+
+                const responseText = await response.text();
+                debugLog(`Response body length: ${responseText.length} chars`);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseErr) {
+                    debugLog(`Failed to parse JSON: ${parseErr.message}`, 'error');
+                    showError('Invalid response from server');
+                    return;
+                }
+
+                if (!response.ok) {
+                    debugLog(`Error response: ${JSON.stringify(data)}`, 'error');
+                    showError(data.error || 'Failed to reveal secret');
+                    return;
+                }
+
+                debugLog(`Success! Views remaining: ${data.views_remaining}`, 'info');
+
+                secretContent = data.content;
+                document.getElementById('secretContent').textContent = data.content;
+
+                const viewsText = data.views_remaining > 0
+                    ? `${data.views_remaining} view${data.views_remaining !== 1 ? 's' : ''} remaining`
+                    : 'This was the last view - secret has been deleted';
+
+                document.getElementById('viewsRemaining').textContent = viewsText;
+
+                showState('secret');
+
+            } catch (err) {
+                debugLog(`Fetch error: ${err.name}: ${err.message}`, 'error');
+                showError(`Failed to reveal secret: ${err.message}`);
+            }
+        }
+
+        debugLog('Page loaded, starting checkStatus...', 'info');
+        checkStatus();
+    </script>
+</body>
+</html>
