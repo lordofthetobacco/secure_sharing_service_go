@@ -39,7 +39,11 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	log.Fatal(server.ListenAndServe())
+	if cfg.TLS.CertFile != "" && cfg.TLS.KeyFile != "" {
+		log.Fatal(server.ListenAndServeTLS(cfg.TLS.CertFile, cfg.TLS.KeyFile))
+	} else {
+		log.Fatal(server.ListenAndServe())
+	}
 }
 
 func initStore(cfg *config.Config) store.Store {

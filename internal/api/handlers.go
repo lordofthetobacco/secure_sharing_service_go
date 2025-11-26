@@ -15,8 +15,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// ----- Handler -----
-
 type Handler struct {
 	store  store.Store
 	config *config.Config
@@ -28,8 +26,6 @@ func NewHandler(s store.Store, cfg *config.Config) *Handler {
 		config: cfg,
 	}
 }
-
-// ----- Request/Response Types -----
 
 type CreateRequest struct {
 	Content    string `json:"content"`
@@ -60,8 +56,6 @@ type StatusResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
-
-// ----- API Handlers -----
 
 func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	h.json(w, http.StatusOK, map[string]string{"status": "ok"})
@@ -185,8 +179,6 @@ func (h *Handler) GetStatus(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ----- Frontend Handlers -----
-
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	h.serveFile(w, "index.html")
 }
@@ -202,13 +194,10 @@ func (h *Handler) serveFile(w http.ResponseWriter, filename string) {
 		return
 	}
 
-	// Set content type based on file extension
 	contentType := "text/html; charset=utf-8"
 	w.Header().Set("Content-Type", contentType)
 	w.Write(content)
 }
-
-// ----- Helpers -----
 
 func (h *Handler) json(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")

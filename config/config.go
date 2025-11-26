@@ -15,6 +15,7 @@ type Config struct {
 	Store     StoreConfig     `yaml:"store"`
 	Secrets   SecretsConfig   `yaml:"secrets"`
 	RateLimit RateLimitConfig `yaml:"rate_limit"`
+	TLS       TLSConfig       `yaml:"tls"`
 }
 
 type ServerConfig struct {
@@ -47,6 +48,11 @@ type RateLimitConfig struct {
 	RevealPerMin   int  `yaml:"reveal_per_min"`
 }
 
+type TLSConfig struct {
+	CertFile string `yaml:"cert_file"`
+	KeyFile  string `yaml:"key_file"`
+}
+
 func Default() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -72,6 +78,10 @@ func Default() *Config {
 			Enabled:        true,
 			RequestsPerMin: 100,
 			RevealPerMin:   20,
+		},
+		TLS: TLSConfig{
+			CertFile: "",
+			KeyFile:  "",
 		},
 	}
 }
@@ -173,6 +183,13 @@ func (c *Config) loadFromEnv() {
 			c.RateLimit.RevealPerMin = n
 		}
 	}
+
+	if v := os.Getenv("TLS_CERT_FILE"); v != "" {
+		c.TLS.CertFile = v
+	}
+	if v := os.Getenv("TLS_KEY_FILE"); v != "" {
+		c.TLS.KeyFile = v
+	}
 }
 
 func (c *Config) Validate() error {
@@ -206,6 +223,13 @@ func (c *Config) Validate() error {
 
 	if c.Secrets.MaxViews < c.Secrets.DefaultViews {
 		return fmt.Errorf("max_views must be >= default_views")
+	}
+
+	if c.TLS.CertFile != "" && c.TLS.KeyFile == "" {
+		return fmt.Errorf("tls_key_file is required when tls_cert_file is set")
+	}
+	if c.TLS.KeyFile != "" && c.TLS.CertFile == "" {
+		return fmt.Errorf("tls_cert_file is required when tls_key_file is set")
 	}
 
 	return nil
