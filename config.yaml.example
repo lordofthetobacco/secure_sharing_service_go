@@ -1,0 +1,26 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  base_url: "https://secrets.example.com"
+
+store:
+  type: "redis"  # or "memory"
+  redis:
+    addr: "localhost:6379"
+    password: ""
+    db: 0
+
+secrets:
+  default_ttl: 1h
+  max_ttl: 24h
+  default_views: 1
+  max_views: 10
+
+rate_limit:
+  enabled: true
+  requests_per_min: 100
+  reveal_per_min: 20
+
+tls:
+  cert_file: /app/certs/cert.pem
+  key_file: /app/certs/key.pem
