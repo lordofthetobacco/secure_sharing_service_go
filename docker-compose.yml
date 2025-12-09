@@ -11,9 +11,9 @@ services:
     volumes:
       - ./config.yaml:/app/config.yaml:ro
       - ./certs:/app/certs:ro
-    depends_on:
-      redis:
-        condition: service_healthy
+    # depends_on:
+    #   redis:
+    #     condition: service_healthy
     networks:
       - bx-share-network
     healthcheck:
@@ -23,22 +23,22 @@ services:
       retries: 3
       start_period: 40s
 
-  redis:
-    image: redis:7-alpine
-    container_name: bx-share-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - bx-share-network
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: bx-share-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - bx-share-network
+  #   command: redis-server --appendonly yes
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 3
 
 networks:
   bx-share-network:
